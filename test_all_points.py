@@ -1,0 +1,61 @@
+import pytest
+from config_data import TestConfig
+from utils import is_ethereum_address
+
+
+class TestAllPoints:
+    def test_get_all_points_success(self, api_client):
+        """Test successful retrieval of all points"""
+        response = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=0, limit=2)
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list), "Should return a list"
+        assert len(data) == 2, "Should return 2 entities"
+
+
+        assert all("points" in point for point in data), "points should be in response"
+        assert all(isinstance(point["points"], int) for point in data), "points should be a integer"
+        assert all("block_number" in point for point in data), "block_number should be in response"
+        assert all(isinstance(point["block_number"], int) for point in data), "block_number should be a integer"
+        assert all("receiver_type" in point for point in data), "receiver_type should be in response"
+        assert all(point["receiver_type"] in TestConfig.SUPPORTED_RECEIVER_TYPES for point in
+                   data), "receiver type should be supported"
+        assert all("receiver_address" in point for point in data), "receiver_address should be in response"
+        assert all(is_ethereum_address(point["receiver_address"]) for point in data), "receiver_address should be a valid ethereum address"
+
+        assert all("vault_address" in point for point in data), "vault_address should be in response"
+        assert all(is_ethereum_address(point["vault_address"]) for point in data), "vault_address should be a valid ethereum address"
+
+        if TestConfig.POINTS_TYPE == "network":
+            assert all("network_address" in point for point in data), "network_address should be in response"
+            assert all(is_ethereum_address(point["network_address"]) for point in data), "network_address should be a valid ethereum address"
+
+    def test_get_all_points_pagination(self, api_client):
+        """Test pagination of all points"""
+        first_page = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=0, limit=4)
+        second_page = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=2, limit=4)
+        third_page = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=4, limit=4)
+
+        first_page_data, second_page_data, third_page_data = first_page.json(), second_page.json(), third_page.json()
+
+        assert first_page.status_code == 200
+        assert second_page.status_code == 200
+        assert third_page.status_code == 200
+
+        assert len({item["receiver_address"] for item in first_page_data} & {item["receiver_address"] for item in
+                                                               second_page_data}) == 2, "Offset or limit not working correctly. Should have 2 common addresses"
+        assert len({item["receiver_address"] for item in second_page_data} & {item["receiver_address"] for item in
+                                                                third_page_data}) == 2, "Offset or limit not working correctly. should have 2 common addresses"
+        assert len({item["receiver_address"] for item in first_page_data} & {item["receiver_address"] for item in
+                                                                third_page_data}) == 0, "Offset or limit not working correctly. should have 0 common addresses"
+
+    @pytest.mark.parametrize("receiver_type", ["staker", "network", "operator"])
+    def test_get_all_points_with_receiver_type(self, api_client, receiver_type):
+        """Test all points retrieval with receiver type filter"""
+        if receiver_type not in TestConfig.SUPPORTED_RECEIVER_TYPES:
+            pytest.skip(f"Points for {receiver_type} are not supported")
+
+        response = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=0, limit=10, receiver_type=receiver_type)
+        assert response.status_code == 200
+        data = response.json()
+        assert all(point["receiver_type"] == receiver_type for point in data)
