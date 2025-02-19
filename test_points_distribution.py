@@ -35,7 +35,7 @@ class TestPointsDistribution:
 
         for point_entity in data["points"]:
             assert "points" in point_entity
-            assert isinstance(point_entity["points"], (int, float)), "points should be a number"
+            assert isinstance(point_entity["points"], int), "points should be a integer"
             assert point_entity["points"] > 0, "points should be greater than 0"
 
             assert "vault_address" in point_entity, "vault_address should be in response"
@@ -63,5 +63,4 @@ class TestPointsDistribution:
 
         non_existent = "0x0000000000000000000000000000000000000000"
         response = api_client.get_points_for_address(receiver_type, non_existent, TestConfig.BLOCK_NUMBER)
-        assert response.status_code == 404 or len(response.json()["points"]) == 0, ("Should return 404 for non-existent address or"
-                                                                          "points list should be empty")
+        assert len(response.json()["points"]) == 0, "Points list should be empty"

@@ -8,7 +8,7 @@ class TestStats:
         assert response.status_code == 200
         data = response.json()
         assert "total_points" in data, "total_points should be in response"
-        assert isinstance(data["total_points"], (int, float)), "total_points should be a number"
+        assert isinstance(data["total_points"], int), "total_points should be a integer"
 
         for receiver_type in TestConfig.SUPPORTED_RECEIVER_TYPES:
             assert receiver_type + "s" in data, f"{receiver_type} should be in response"
@@ -24,5 +24,5 @@ class TestStats:
         assert response.status_code == 200
         data = response.json()
         assert receiver_type + "s" in data, f"{receiver_type} should be in response"
-        assert isinstance(data[receiver_type + "s"], (int, float)), f"{receiver_type} should be a number"
+        assert isinstance(data[receiver_type + "s"], int), f"{receiver_type} should be a integer"
 

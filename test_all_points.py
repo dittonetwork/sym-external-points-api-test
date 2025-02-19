@@ -13,22 +13,22 @@ class TestAllPoints:
         assert len(data) == 2, "Should return 2 entities"
 
 
-        assert all("points" in point for point in data), "points should be in response"
-        assert all(isinstance(point["points"], int) for point in data), "points should be a integer"
-        assert all("block_number" in point for point in data), "block_number should be in response"
-        assert all(isinstance(point["block_number"], int) for point in data), "block_number should be a integer"
-        assert all("receiver_type" in point for point in data), "receiver_type should be in response"
-        assert all(point["receiver_type"] in TestConfig.SUPPORTED_RECEIVER_TYPES for point in
+        assert all("points" in entity for entity in data), "points should be in response"
+        assert all(isinstance(entity["points"], int) for entity in data), "points should be a integer"
+        assert all("block_number" in entity for entity in data), "block_number should be in response"
+        assert all(isinstance(entity["block_number"], int) for entity in data), "block_number should be a integer"
+        assert all("receiver_type" in entity for entity in data), "receiver_type should be in response"
+        assert all(entity["receiver_type"] in TestConfig.SUPPORTED_RECEIVER_TYPES for entity in
                    data), "receiver type should be supported"
-        assert all("receiver_address" in point for point in data), "receiver_address should be in response"
-        assert all(is_ethereum_address(point["receiver_address"]) for point in data), "receiver_address should be a valid ethereum address"
+        assert all("receiver_address" in entity for entity in data), "receiver_address should be in response"
+        assert all(is_ethereum_address(entity["receiver_address"]) for entity in data), "receiver_address should be a valid ethereum address"
 
-        assert all("vault_address" in point for point in data), "vault_address should be in response"
-        assert all(is_ethereum_address(point["vault_address"]) for point in data), "vault_address should be a valid ethereum address"
+        assert all("vault_address" in entity for entity in data), "vault_address should be in response"
+        assert all(is_ethereum_address(entity["vault_address"]) for entity in data), "vault_address should be a valid ethereum address"
 
         if TestConfig.POINTS_TYPE == "network":
-            assert all("network_address" in point for point in data), "network_address should be in response"
-            assert all(is_ethereum_address(point["network_address"]) for point in data), "network_address should be a valid ethereum address"
+            assert all("network_address" in entity for entity in data), "network_address should be in response"
+            assert all(is_ethereum_address(entity["network_address"]) for entity in data), "network_address should be a valid ethereum address"
 
     def test_get_all_points_pagination(self, api_client):
         """Test pagination of all points"""
@@ -58,4 +58,4 @@ class TestAllPoints:
         response = api_client.get_all_points(TestConfig.BLOCK_NUMBER, offset=0, limit=10, receiver_type=receiver_type)
         assert response.status_code == 200
         data = response.json()
-        assert all(point["receiver_type"] == receiver_type for point in data)
+        assert all(entity["receiver_type"] == receiver_type for entity in data), "receiver_type should match"
