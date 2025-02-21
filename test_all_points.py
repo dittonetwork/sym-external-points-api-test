@@ -42,12 +42,18 @@ class TestAllPoints:
         assert second_page.status_code == 200
         assert third_page.status_code == 200
 
-        assert len({item["receiver_address"] for item in first_page_data} & {item["receiver_address"] for item in
-                                                               second_page_data}) == 2, "Offset or limit not working correctly. Should have 2 common addresses"
-        assert len({item["receiver_address"] for item in second_page_data} & {item["receiver_address"] for item in
-                                                                third_page_data}) == 2, "Offset or limit not working correctly. should have 2 common addresses"
-        assert len({item["receiver_address"] for item in first_page_data} & {item["receiver_address"] for item in
-                                                                third_page_data}) == 0, "Offset or limit not working correctly. should have 0 common addresses"
+
+        assert len({(item["receiver_address"], item["points"], item["vault_address"]) for item in first_page_data} & {
+            (item["receiver_address"], item["points"], item["vault_address"]) for item in
+            second_page_data}) == 2, "Offset or limit not working correctly. Should have 2 common addresses and points"
+
+        assert len({(item["receiver_address"], item["points"], item["vault_address"]) for item in second_page_data} & {
+            (item["receiver_address"], item["points"], item["vault_address"]) for item in
+            third_page_data}) == 2, "Offset or limit not working correctly. should have 2 common addresses"
+
+        assert len({(item["receiver_address"], item["points"], item["vault_address"]) for item in first_page_data} & {
+            (item["receiver_address"], item["points"], item["vault_address"]) for item in
+            third_page_data}) == 0, "Offset or limit not working correctly. should have 0 common addresses"
 
     @pytest.mark.parametrize("receiver_type", ["staker", "network", "operator"])
     def test_get_all_points_with_receiver_type(self, api_client, receiver_type):
