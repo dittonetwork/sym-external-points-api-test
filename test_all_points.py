@@ -15,6 +15,8 @@ class TestAllPoints:
 
         assert all("points" in entity for entity in data), "points should be in response"
         assert all(isinstance(entity["points"], int) for entity in data), "points should be a integer"
+        assert all(entity["points"] > 0 for entity in data), "points should be greater than 0"
+
         assert all("block_number" in entity for entity in data), "block_number should be in response"
         assert all(isinstance(entity["block_number"], int) for entity in data), "block_number should be a integer"
         assert all("receiver_type" in entity for entity in data), "receiver_type should be in response"
