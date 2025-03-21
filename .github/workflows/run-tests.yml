@@ -1,0 +1,106 @@
+name: Run External Points API Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: 'API Base URL to test'
+        required: false
+        default: ''
+      points_type:
+        description: 'Points type (network or vault)'
+        required: false
+        default: 'network'
+      block_number:
+        description: 'Block number to use for tests'
+        required: false
+        default: ''
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Update config if inputs provided
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          python -c "
+          import json
+          from config_data import TestConfig
+          
+          # Get inputs from workflow dispatch
+          api_base_url = '${{ github.event.inputs.api_base_url }}'
+          points_type = '${{ github.event.inputs.points_type }}'
+          block_number = '${{ github.event.inputs.block_number }}'
+          
+          # Update config only if values are provided
+          updates = {}
+          if api_base_url:
+              updates['API_BASE_URL'] = api_base_url
+          if points_type:
+              updates['POINTS_TYPE'] = points_type
+          if block_number:
+              updates['BLOCK_NUMBER'] = int(block_number)
+          
+          # Write updated config to file
+          if updates:
+              with open('updated_config.json', 'w') as f:
+                  json.dump(updates, f)
+              print('Updated config with:', updates)
+          "
+          
+          # If updates were made, create a temp config file
+          if [ -f updated_config.json ]; then
+            python -c "
+            import json
+            import os
+            
+            # Read existing config
+            from config_data import TestConfig
+            
+            # Read updates
+            with open('updated_config.json', 'r') as f:
+                updates = json.load(f)
+            
+            # Create updated config file
+            with open('temp_config_data.py', 'w') as f:
+                f.write('class TestConfig:\n')
+                for attr in dir(TestConfig):
+                    if not attr.startswith('__'):
+                        value = getattr(TestConfig, attr)
+                        if attr in updates:
+                            value = updates[attr]
+                        f.write(f'    {attr} = {repr(value)}\n')
+            "
+            mv temp_config_data.py config_data.py
+            cat config_data.py
+          fi
+          
+      - name: Run tests
+        run: |
+          python -m pytest -v
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            .pytest_cache
+            pytest-report.xml
+          retention-days: 7 

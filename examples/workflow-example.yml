@@ -1,0 +1,33 @@
+name: External Points API Integration Test
+
+on:
+  # Run on schedule (once a day at 00:00 UTC)
+  schedule:
+    - cron: '0 0 * * *'
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: 'Custom API Base URL to test'
+        required: false
+      block_number:
+        description: 'Custom block number to test'
+        required: false
+
+jobs:
+  test-external-points-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run External Points API Tests
+        uses: dittonetwork/external-points-api-test@v1
+        with:
+          api_base_url: ${{ github.event.inputs.api_base_url || secrets.EXTERNAL_API_BASE_URL }}
+          points_type: 'network'
+          supported_receiver_types: 'staker,operator'
+          receiver_addresses: >-
+            {
+              "staker": "${{ secrets.STAKER_ADDRESS }}",
+              "operator": "${{ secrets.OPERATOR_ADDRESS }}"
+            }
+          block_number: ${{ github.event.inputs.block_number || secrets.TEST_BLOCK_NUMBER }} 
