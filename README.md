@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run External Points API Tests
-        uses: dittonetwork/external-points-api-test@v1
+        uses: symbioticfi/external-points-api-test@v1
         with:
           api_base_url: "https://your-api-url.com/external/api/"
           points_type: "network"
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run External Points API Tests
-        uses: dittonetwork/external-points-api-test@v1
+        uses: symbioticfi/external-points-api-test@main
         with:
           api_base_url: ${{ secrets.EXTERNAL_API_BASE_URL }}
           points_type: "network"
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run External Points API Tests
-        uses: dittonetwork/external-points-api-test@v1
+        uses: symbioticfi/external-points-api-test@main
         with:
           api_base_url: ${{ secrets.EXTERNAL_API_BASE_URL }}
           # ... other inputs
