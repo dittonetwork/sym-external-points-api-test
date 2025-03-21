@@ -48,15 +48,22 @@ runs:
       shell: bash
       working-directory: sym-external-points-api-test
       run: |
+        # Write receiver addresses to a separate file to avoid escaping issues
+        echo '${{ inputs.receiver_addresses }}' > receiver_addresses.json
+        
         python -c "
         import json
+        import os
         
         # Parse inputs
         api_base_url = '${{ inputs.api_base_url }}'
         points_type = '${{ inputs.points_type }}'
         supported_types = '${{ inputs.supported_receiver_types }}'.replace(' ', '').split(',')
-        receiver_addresses = json.loads('${{ inputs.receiver_addresses }}')
         block_number = '${{ inputs.block_number }}'
+        
+        # Load receiver addresses from file to avoid escaping issues
+        with open('receiver_addresses.json', 'r') as f:
+            receiver_addresses = json.loads(f.read())
         
         # Create config file
         with open('config_data.py', 'w') as f:
